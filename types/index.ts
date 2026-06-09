@@ -1,48 +1,66 @@
 export type ReservationPurpose =
-  | 'protein_purification'
-  | 'size_exclusion'
-  | 'ion_exchange'
-  | 'affinity_chromatography'
+  | 'sample_prep'
+  | 'data_collection'
   | 'method_development'
-  | 'column_equilibration'
   | 'training'
+  | 'maintenance'
   | 'other'
 
 export const PURPOSE_LABELS: Record<ReservationPurpose, string> = {
-  protein_purification: 'Protein Purification',
-  size_exclusion: 'Size Exclusion (SEC)',
-  ion_exchange: 'Ion Exchange (IEX)',
-  affinity_chromatography: 'Affinity Chromatography',
+  sample_prep: 'Sample Preparation',
+  data_collection: 'Data Collection',
   method_development: 'Method Development',
-  column_equilibration: 'Column Equilibration',
-  training: 'Training / Onboarding',
+  training: 'Training',
+  maintenance: 'Maintenance',
   other: 'Other',
 }
 
 export const PURPOSE_COLORS: Record<ReservationPurpose, string> = {
-  protein_purification: 'bg-blue-500',
-  size_exclusion: 'bg-emerald-500',
-  ion_exchange: 'bg-orange-500',
-  affinity_chromatography: 'bg-violet-500',
+  sample_prep: 'bg-blue-500',
+  data_collection: 'bg-emerald-500',
   method_development: 'bg-amber-500',
-  column_equilibration: 'bg-teal-500',
   training: 'bg-pink-500',
-  other: 'bg-slate-500',
+  maintenance: 'bg-slate-500',
+  other: 'bg-violet-500',
 }
 
-export const PURPOSE_BORDER_COLORS: Record<ReservationPurpose, string> = {
-  protein_purification: 'border-blue-400',
-  size_exclusion: 'border-emerald-400',
-  ion_exchange: 'border-orange-400',
-  affinity_chromatography: 'border-violet-400',
-  method_development: 'border-amber-400',
-  column_equilibration: 'border-teal-400',
-  training: 'border-pink-400',
-  other: 'border-slate-400',
+export const INSTRUMENT_COLORS = [
+  'bg-blue-500',
+  'bg-emerald-500',
+  'bg-violet-500',
+  'bg-orange-500',
+  'bg-pink-500',
+  'bg-teal-500',
+  'bg-amber-600',
+  'bg-red-500',
+  'bg-indigo-500',
+  'bg-cyan-600',
+]
+
+export const INSTRUMENT_TEXT_COLORS: Record<string, string> = {
+  'bg-blue-500': 'text-blue-600',
+  'bg-emerald-500': 'text-emerald-600',
+  'bg-violet-500': 'text-violet-600',
+  'bg-orange-500': 'text-orange-600',
+  'bg-pink-500': 'text-pink-600',
+  'bg-teal-500': 'text-teal-600',
+  'bg-amber-600': 'text-amber-600',
+  'bg-red-500': 'text-red-600',
+  'bg-indigo-500': 'text-indigo-600',
+  'bg-cyan-600': 'text-cyan-600',
+}
+
+export interface Instrument {
+  id: string
+  name: string
+  description: string
+  color: string
+  createdAt: string
 }
 
 export interface Reservation {
   id: string
+  instrumentId: string
   userName: string
   userEmail: string
   purpose: ReservationPurpose

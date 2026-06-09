@@ -1,55 +1,29 @@
 import { NextResponse } from 'next/server'
 import { getReservations, addReservation, hasConflict } from '@/lib/store'
 
-export async function GET() {
-  const reservations = await getReservations()
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const instrumentId = searchParams.get('instrumentId') ?? undefined
+  const reservations = await getReservations(instrumentId)
   return NextResponse.json(reservations)
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { userName, userEmail, purpose, startTime, endTime, notes } = body
+    const { instrumentId, userName, userEmail = '', purpose, startTime, endTime, notes = '' } = body
 
-    if (!userName?.trim() || !purpose || !startTime || !endTime) {
-      return NextResponse.json({ error: 'Name, purpose, and time range are required.' }, { status: 400 })
-    }
+    if (!instrumentId) return NextResponse.json({ error: 'Instrument ID is required.' }, { status: 400 })
+    if (!userName?.trim()) return NextResponse.json({ error: 'Name is required.' }, { status: 400 })
+    if (!startTime || !endTime) return NextResponse.json({ error: 'Start and end time are required.' }, { status: 400 })
+    if (new Date(startTime) >= new Date(endTime)) return NextResponse.json({ error: 'End time must be after start time.' }, { status: 400 })
 
-    const start = new Date(startTime)
-    const end = new Date(endTime)
+    const conflict = await hasConflict(instrumentId, startTime, endTime)
+    if (conflict) return NextResponse.json({ error: 'This time slot conflicts with an existing reservation for this instrument.' }, { status: 409 })
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return NextResponse.json({ error: 'Invalid date/time format.' }, { status: 400 })
-    }
-
-    if (end <= start) {
-      return NextResponse.json({ error: 'End time must be after start time.' }, { status: 400 })
-    }
-
-    const durationMinutes = (end.getTime() - start.getTime()) / 60000
-    if (durationMinutes < 30) {
-      return NextResponse.json({ error: 'Minimum reservation duration is 30 minutes.' }, { status: 400 })
-    }
-
-    const conflict = await hasConflict(startTime, endTime)
-    if (conflict) {
-      return NextResponse.json(
-        { error: 'This time slot overlaps with an existing reservation. Please choose a different time.' },
-        { status: 409 }
-      )
-    }
-
-    const reservation = await addReservation({
-      userName: userName.trim(),
-      userEmail: userEmail?.trim() || '',
-      purpose,
-      startTime: start.toISOString(),
-      endTime: end.toISOString(),
-      notes: notes?.trim() || '',
-    })
-
+    const reservation = await addReservation({ instrumentId, userName: userName.trim(), userEmail, purpose, startTime, endTime, notes })
     return NextResponse.json(reservation, { status: 201 })
   } catch {
-    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
+    return NextResponse.json({ error: 'Failed to create reservation.' }, { status: 500 })
   }
 }

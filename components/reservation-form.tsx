@@ -14,6 +14,7 @@ import { ReservationPurpose, PURPOSE_LABELS } from '@/types'
 interface ReservationFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  instrumentId: string
   defaultDate?: Date
   defaultHour?: number
   onCreated: () => void
@@ -23,10 +24,10 @@ function toDatetimeLocal(d: Date) {
   return format(d, "yyyy-MM-dd'T'HH:mm")
 }
 
-export function ReservationForm({ open, onOpenChange, defaultDate, defaultHour, onCreated }: ReservationFormProps) {
+export function ReservationForm({ open, onOpenChange, instrumentId, defaultDate, defaultHour, onCreated }: ReservationFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [purpose, setPurpose] = useState<ReservationPurpose>('protein_purification')
+  const [purpose, setPurpose] = useState<ReservationPurpose>('data_collection')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
   const [notes, setNotes] = useState('')
@@ -46,10 +47,7 @@ export function ReservationForm({ open, onOpenChange, defaultDate, defaultHour, 
     }
   }, [open, defaultDate, defaultHour])
 
-  const reset = () => {
-    setName(''); setEmail(''); setNotes(''); setError('')
-    setPurpose('protein_purification')
-  }
+  const reset = () => { setName(''); setEmail(''); setNotes(''); setError(''); setPurpose('data_collection') }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,7 +61,7 @@ export function ReservationForm({ open, onOpenChange, defaultDate, defaultHour, 
       const res = await fetch('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName: name, userEmail: email, purpose, startTime, endTime, notes }),
+        body: JSON.stringify({ instrumentId, userName: name, userEmail: email, purpose, startTime, endTime, notes }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -84,7 +82,7 @@ export function ReservationForm({ open, onOpenChange, defaultDate, defaultHour, 
     <Dialog open={open} onOpenChange={v => { onOpenChange(v); if (!v) reset() }}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Reserve ÄKTA FPLC</DialogTitle>
+          <DialogTitle>Book Instrument</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-1">
           <div className="grid grid-cols-2 gap-3">
@@ -101,9 +99,7 @@ export function ReservationForm({ open, onOpenChange, defaultDate, defaultHour, 
           <div className="space-y-1.5">
             <Label>Purpose</Label>
             <Select value={purpose} onValueChange={v => setPurpose(v as ReservationPurpose)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {(Object.entries(PURPOSE_LABELS) as [ReservationPurpose, string][]).map(([k, v]) => (
                   <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -125,26 +121,14 @@ export function ReservationForm({ open, onOpenChange, defaultDate, defaultHour, 
 
           <div className="space-y-1.5">
             <Label htmlFor="rf-notes">Notes</Label>
-            <Textarea
-              id="rf-notes"
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              placeholder="Column used, buffer details, sample info…"
-              rows={3}
-            />
+            <Textarea id="rf-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Sample info, method, column used…" rows={3} />
           </div>
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+          {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => { onOpenChange(false); reset() }}>Cancel</Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Booking…' : 'Confirm Reservation'}
-            </Button>
+            <Button type="submit" disabled={loading}>{loading ? 'Booking…' : 'Confirm Reservation'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

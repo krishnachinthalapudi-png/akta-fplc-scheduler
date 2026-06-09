@@ -1,18 +1,18 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "ÄKTA FPLC Scheduler — Chinthalapudi Lab",
-  description: "Lab instrument reservation and scheduling for the ÄKTA FPLC system",
-};
+  title: 'Lab Instrument Scheduler — Chinthalapudi Lab',
+  description: 'Reserve and track lab instruments at the Chinthalapudi Lab, Pelotonia Research Center, OSU',
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>{children}</body>
+      <body className={inter.className}>{children}</body>
     </html>
-  );
+  )
 }
